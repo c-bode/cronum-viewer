@@ -1,0 +1,44 @@
+*{box-sizing:border-box}
+body{font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:#222; margin:0; width:360px; background:#faf9f7}
+header{padding:12px 12px 4px}
+h1{font-size:16px; margin:0 0 4px 0}
+.sub{color:#666; font-size:12px}
+.nft{padding:8px 12px 4px}
+.row{display:flex; gap:8px; align-items:flex-end; margin:6px 0}
+label{display:flex; flex-direction:column; gap:4px; font-size:12px; color:#444}
+.grow{flex:1}
+input, select, button{height:34px; padding:0 10px; border:1px solid #ddd; border-radius:8px; background:#fff}
+button{cursor:pointer; background:#3056A5; color:#fff; border-color:#2a4b92}
+button:hover{background:#274989}
+a.link{display:inline-flex; align-items:center; padding:0 10px; height:34px; border:1px solid #ddd; border-radius:8px; text-decoration:none; color:#3056A5; background:#fff}
+.actions{align-items:center}
+.pill{margin-left:auto; font-size:12px; padding:4px 8px; background:#fff; border:1px solid #eee; border-radius:999px}
+.tabs{display:flex; gap:6px; padding:4px 8px}
+.tab{flex:1; border:1px solid #ddd; background:#fff; color:#333}
+.tab.active{background:#eef3ff; border-color:#cdd8ff}
+.panel{display:none; padding:4px 8px 10px}
+.panel.active{display:block}
+.list{display:flex; flex-direction:column; gap:8px}
+.item{background:#fff; border:1px solid #eee; border-radius:10px; padding:10px}
+.item h3{margin:0 0 6px 0; font-size:14px}
+.item .meta{color:#666; font-size:12px; margin-bottom:6px}
+.row .warn{color:#8a6d3b}
+.row .bad{color:#b42318}
+.row a{color:#3056A5}
+.row a:hover{color:#274989}
+
+#toast{position:fixed; bottom:8px; left:8px; right:8px; background:rgba(0,0,0,.9); color:#fff; padding:8px 10px; border-radius:8px; font-size:12px; opacity:0; transform:translateY(8px); transition:all .2s}
+#toast.show{opacity:1; transform:translateY(0)}
+#toast.good{background:#1e7f34}
+#toast.warn{background:#b26b00}
+#toast.bad{background:#b42318}
+
+/* --- Preview area --- */
+.preview{ margin-top:8px; }
+.preview img{ max-width:100%; max-height:240px; border-radius:8px; border:1px solid #eee; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.preview .code{
+  white-space:pre-wrap; background:#f7f7f7; padding:8px; border-radius:8px;
+  border:1px solid #eee; max-height:240px; overflow:auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size:12px; line-height:1.4;
+}

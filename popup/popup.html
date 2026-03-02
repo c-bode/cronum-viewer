@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cronum Viewer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>Cronum Viewer</h1>
+    <div class="sub">Discover public Crona and unlock encrypted content if you own the NFT.</div>
+  </header>
+
+  <section class="nft">
+    <div class="row">
+      <label>Chain
+        <select id="chain">
+          <option value="ethereum">ethereum</option>
+          <option value="polygon">polygon</option>
+          <option value="arbitrum">arbitrum</option>
+          <option value="base">base</option>
+          <option value="optimism">optimism</option>
+        </select>
+      </label>
+      <label>Standard
+        <select id="standard">
+          <option value="erc721">erc721</option>
+          <option value="erc1155">erc1155</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label class="grow">Contract
+        <input id="contract" placeholder="0x..." />
+      </label>
+      <label class="grow">Token ID
+        <input id="tokenId" placeholder="1234" />
+      </label>
+    </div>
+    <div class="row actions">
+      <button id="btn-connect">Connect Wallet</button>
+      <button id="btn-refresh">Refresh</button>
+      <a id="btn-add" class="link" target="_blank" rel="noopener">Add Cronum</a>
+      <span id="count" class="pill">0 items</span>
+    </div>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="public">Public</button>
+    <button class="tab" data-tab="unlockable">Unlockable</button>
+  </nav>
+
+  <section id="panel-public" class="panel active">
+    <div id="list-public" class="list"></div>
+  </section>
+  <section id="panel-unlockable" class="panel">
+    <div id="list-unlockable" class="list"></div>
+  </section>
+
+  <div id="toast"></div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

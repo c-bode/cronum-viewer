@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Cronum Viewer (Vanilla)",
+  "version": "0.1.0",
+  "description": "View Crona (public + unlockable) for an NFT page. Unlock with Lit if you own the NFT.",
+  "action": {
+    "default_title": "Cronum Viewer",
+    "default_popup": "popup/popup.html"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://arweave.net/*",
+    "https://*.arweave.net/*",
+    "https://cloudflare-eth.com/*",
+    "https://polygon-rpc.com/*",
+    "https://arb1.arbitrum.io/*",
+    "https://mainnet.optimism.io/*",
+    "https://mainnet.base.org/*",
+    "https://*/*"
+  ],
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/detect.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
