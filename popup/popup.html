@@ -8,36 +8,43 @@
 </head>
 <body>
   <header>
-    <h1>Cronum Viewer</h1>
+    <div class="header-row">
+      <h1>Cronum Viewer</h1>
+      <button id="btn-theme" class="theme-toggle" type="button" title="Theme: Auto">Theme: Auto</button>
+    </div>
     <div class="sub">Discover public Crona and unlock encrypted content if you own the NFT.</div>
   </header>
 
   <section class="nft">
-    <div class="row">
-      <label>Chain
-        <select id="chain">
-          <option value="ethereum">ethereum</option>
-          <option value="polygon">polygon</option>
-          <option value="arbitrum">arbitrum</option>
-          <option value="base">base</option>
-          <option value="optimism">optimism</option>
-        </select>
-      </label>
-      <label>Standard
-        <select id="standard">
-          <option value="erc721">erc721</option>
-          <option value="erc1155">erc1155</option>
-        </select>
-      </label>
-    </div>
-    <div class="row">
-      <label class="grow">Contract
-        <input id="contract" placeholder="0x..." />
-      </label>
-      <label class="grow">Token ID
-        <input id="tokenId" placeholder="1234" />
-      </label>
-    </div>
+    <details id="artwork-details" class="artwork-details">
+      <summary>Artwork (blockchain details)</summary>
+      <div class="row">
+        <label>Chain
+          <select id="chain">
+            <option value="ethereum">ethereum</option>
+            <option value="polygon">polygon</option>
+            <option value="arbitrum">arbitrum</option>
+            <option value="base">base</option>
+            <option value="optimism">optimism</option>
+          </select>
+        </label>
+        <label>Standard
+          <select id="standard">
+            <option value="erc721">erc721</option>
+            <option value="erc1155">erc1155</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label class="grow">Contract
+          <input id="contract" placeholder="0x..." />
+        </label>
+        <label class="grow">Token ID
+          <input id="tokenId" placeholder="1234" />
+        </label>
+      </div>
+    </details>
+    <div id="no-artwork" class="no-artwork" hidden>No artwork detected</div>
     <div class="row actions">
       <button id="btn-connect">Connect Wallet</button>
       <button id="btn-refresh">Refresh</button>

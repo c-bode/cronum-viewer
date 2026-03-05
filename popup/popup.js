@@ -5,6 +5,8 @@ import { loadLit, getAuthSig, decryptPackedToString, decryptLocalGCM } from '../
 
 const $ = sel => document.querySelector(sel);
 const on = (el, ev, fn) => el.addEventListener(ev, fn);
+const THEME_PREF_KEY = 'cronum-theme-pref';
+const THEME_OPTIONS = ['auto', 'light', 'dark'];
 
 function toast(msg, kind = '') {
   const t = $('#toast');
@@ -42,6 +44,16 @@ function writeNFTToUI(nft) {
   updateAddLink();
 }
 
+function hasDetectedArtwork(nft) {
+  return Boolean(nft?.chain && nft?.standard && nft?.contract && nft?.tokenId);
+}
+
+function setArtworkUIState(nft) {
+  const hasArtwork = hasDetectedArtwork(nft);
+  $('#artwork-details').hidden = !hasArtwork;
+  $('#no-artwork').hidden = hasArtwork;
+}
+
 function updateAddLink() {
   try{
     const url = new URL(UPLOADER_URL);
@@ -56,7 +68,90 @@ function switchTab(tab) {
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
 }
 
+function readThemePreference() {
+  const saved = localStorage.getItem(THEME_PREF_KEY);
+  return THEME_OPTIONS.includes(saved) ? saved : 'auto';
+}
+
+function nextThemePreference(pref) {
+  const idx = THEME_OPTIONS.indexOf(pref);
+  return THEME_OPTIONS[(idx + 1) % THEME_OPTIONS.length];
+}
+
+function systemPrefersDark() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function resolvedTheme(pref) {
+  if (pref === 'dark') return 'dark';
+  if (pref === 'light') return 'light';
+  return systemPrefersDark() ? 'dark' : 'light';
+}
+
+function updateThemeButton(pref) {
+  const btn = $('#btn-theme');
+  if (!btn) return;
+  const label = pref === 'auto' ? 'Auto' : pref[0].toUpperCase() + pref.slice(1);
+  btn.textContent = `Theme: ${label}`;
+  btn.title = `Theme: ${label}`;
+}
+
+function applyTheme(pref) {
+  document.documentElement.dataset.theme = resolvedTheme(pref);
+  updateThemeButton(pref);
+}
+
+function initThemeControl() {
+  let pref = readThemePreference();
+  applyTheme(pref);
+
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  const handleSystemThemeChange = () => {
+    if (pref === 'auto') applyTheme(pref);
+  };
+
+  if (typeof media.addEventListener === 'function') media.addEventListener('change', handleSystemThemeChange);
+  else if (typeof media.addListener === 'function') media.addListener(handleSystemThemeChange);
+
+  const themeBtn = $('#btn-theme');
+  if (!themeBtn) return;
+
+  on(themeBtn, 'click', () => {
+    pref = nextThemePreference(pref);
+    localStorage.setItem(THEME_PREF_KEY, pref);
+    applyTheme(pref);
+  });
+}
+
+function createLoadingIndicator() {
+  const wrap = h('div', { class: 'loading-indicator', role: 'status', 'aria-label': 'Loading' });
+  wrap.appendChild(h('span', { class: 'dot' }));
+  wrap.appendChild(h('span', { class: 'dot' }));
+  wrap.appendChild(h('span', { class: 'dot' }));
+  return wrap;
+}
+
+function setListLoadingState(sel) {
+  const list = $(sel);
+  list.innerHTML = '';
+  list.appendChild(createLoadingIndicator());
+}
+
 /* ------------ Helpers for previews ------------ */
+function formatCreatedAt(createdAt) {
+  if (!createdAt) return 'n/a';
+  const d = new Date(createdAt);
+  if (Number.isNaN(d.getTime())) return String(createdAt);
+  // Intl uses the browser's current locale + timezone by default.
+  return new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(d);
+}
+
 function looksLikeJSON(s) {
   if (!s) return false;
   const t = s.trim();
@@ -94,20 +189,24 @@ async function buildPreviewFromUrl(url, fallbackMime) {
 
 /* ------------ Renderers ------------ */
 function itemCardPublic(it) {
-  const ext = it?.file?.ext ? `.${it.file.ext}` : '';
-  const title = `${it.file?.name || '(unnamed)'}${ext}`;
+  const rawName = (it?.file?.name || '').trim();
+  const rawExt = (it?.file?.ext || '').trim();
+  const normalizedExt = rawExt ? (rawExt.startsWith('.') ? rawExt : `.${rawExt}`) : '';
+  const title = rawName
+    ? (normalizedExt && !rawName.toLowerCase().endsWith(normalizedExt.toLowerCase()) ? `${rawName}${normalizedExt}` : rawName)
+    : '(unnamed)';
   const previewBtn = h('button', {}, 'Preview');
   const previewBox = h('div', { class: 'preview', style: { display: 'none' } });
 
   const card = h('div', { class: 'item' }, [
     h('h3', {}, title),
     h('div', { class: 'meta' }, [
-      `size: ${prettyBytes(it.file?.size || 0)} · mime: ${it.file?.mime || 'n/a'} · created: ${it.createdAt || 'n/a'}`
+      `${formatCreatedAt(it.createdAt)} · ${it.file?.mime || 'n/a'} · ${prettyBytes(it.file?.size || 0)} · `,
+      h('a', { href: it.descriptorUrl, target: '_blank', rel: 'noopener' }, 'descriptor')
     ]),
     h('div', { class: 'row' }, [
-      it.dataUrl ? h('a', { href: it.dataUrl, target: '_blank', rel: 'noopener' }, 'Open data') : h('span', { class: 'bad' }, 'No dataUrl'),
-      h('a', { href: it.descriptorUrl, target: '_blank', rel: 'noopener' }, 'Descriptor'),
-      it.dataUrl ? previewBtn : h('span', { class: 'warn' }, 'Preview unavailable')
+      it.dataUrl ? previewBtn : h('span', { class: 'warn' }, 'Preview unavailable'),
+      it.dataUrl ? h('a', { class: 'link', href: it.dataUrl, target: '_blank', rel: 'noopener' }, 'Open') : h('span', { class: 'bad' }, 'No dataUrl')
     ]),
     previewBox
   ]);
@@ -141,13 +240,13 @@ function itemCardUnlockable(it, ctx) {
   const out = h('div', { class: 'item' }, [
     h('h3', {}, title),
     h('div', { class: 'meta' }, [
-      `size: ${prettyBytes(it.file?.size || 0)} · mime: ${it.file?.mime || 'text/plain'} · created: ${it.createdAt || 'n/a'}`
+      `${formatCreatedAt(it.createdAt)} · ${it.file?.mime || 'text/plain'} · ${prettyBytes(it.file?.size || 0)} · `,
+      h('a', { href: it.descriptorUrl, target: '_blank', rel: 'noopener' }, 'descriptor')
     ]),
     h('div', { class: 'row' }, [
-      h('a', { href: it.descriptorUrl, target: '_blank', rel: 'noopener' }, 'Descriptor'),
       btn
     ]),
-    h('pre', { style: { display:'none', whiteSpace:'pre-wrap', background:'#f7f7f7', padding:'8px', borderRadius:'8px', border:'1px solid #eee', maxHeight:'180px', overflow:'auto' } }, '')
+    h('pre', { class: 'unlock-pre' }, '')
   ]);
   const pre = out.querySelector('pre');
 
@@ -234,8 +333,8 @@ async function refreshCronum() {
   const nft = readNFTFromUI();
   if (!nft.contract || !nft.tokenId) { toast('Enter contract & tokenId', 'warn'); return; }
 
-  $('#list-public').innerHTML = 'Loading…';
-  $('#list-unlockable').innerHTML = 'Loading…';
+  setListLoadingState('#list-public');
+  setListLoadingState('#list-unlockable');
 
   try {
     const { publics, locks } = await discoverCronum(nft);
@@ -260,6 +359,8 @@ async function refreshCronum() {
 }
 
 async function init() {
+  initThemeControl();
+
   // tabs
   document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
@@ -280,7 +381,8 @@ async function init() {
 
   // Seed fields from detected NFT
   const detected = await getDetectedNFT();
-  if (detected) writeNFTToUI(detected);
+  setArtworkUIState(detected);
+  if (hasDetectedArtwork(detected)) writeNFTToUI(detected);
   else updateAddLink();
 
   // Initial load if we have enough to go
